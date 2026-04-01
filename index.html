@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HIGH5 카드 뒤집기 게임</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&family=Noto+Sans+KR:wght@400;700;900&family=Black+Han+Sans&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#080e2e;--purple:#6b2fcc;--purple-l:#9b59f5;--purple-gl:#c084fc;--gold:#f5c842;--gold2:#ff9d3d;--pink:#ff6eb4;}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{width:100%;min-height:100vh;}
+body{font-family:'Nunito','Noto Sans KR',sans-serif;background:var(--navy);display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow-x:hidden;}
+.bg-base{position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 80% 60% at 50% 40%,#12195a 0%,#080e2e 100%);}
+.bg-glow{position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 45% 35% at 15% 20%,rgba(107,47,204,.28) 0%,transparent 70%),radial-gradient(ellipse 40% 30% at 85% 75%,rgba(107,47,204,.22) 0%,transparent 70%),radial-gradient(ellipse 35% 25% at 80% 15%,rgba(192,132,252,.15) 0%,transparent 70%);}
+.stars-layer{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:radial-gradient(1px 1px at 8% 12%,#fff,transparent),radial-gradient(1.5px 1.5px at 18% 35%,rgba(255,255,255,.9),transparent),radial-gradient(1px 1px at 30% 8%,#fff,transparent),radial-gradient(1px 1px at 45% 22%,rgba(255,255,255,.7),transparent),radial-gradient(2px 2px at 55% 5%,rgba(192,132,252,.9),transparent),radial-gradient(1px 1px at 65% 40%,#fff,transparent),radial-gradient(1.5px 1.5px at 75% 18%,rgba(255,255,255,.8),transparent),radial-gradient(1px 1px at 88% 28%,#fff,transparent),radial-gradient(1px 1px at 5% 55%,#fff,transparent),radial-gradient(1.5px 1.5px at 12% 72%,rgba(255,255,255,.7),transparent),radial-gradient(1px 1px at 22% 88%,#fff,transparent),radial-gradient(1px 1px at 38% 65%,rgba(192,132,252,.8),transparent),radial-gradient(2px 2px at 50% 80%,rgba(255,255,255,.5),transparent),radial-gradient(1px 1px at 72% 60%,rgba(255,255,255,.8),transparent),radial-gradient(1.5px 1.5px at 82% 82%,rgba(255,255,255,.6),transparent),radial-gradient(1px 1px at 95% 70%,#fff,transparent);}
+.screen{position:relative;z-index:10;width:100%;max-width:1400px;padding:16px 8px;display:none;flex-direction:column;align-items:center;animation:fadeUp .5s ease;}
+.screen.active{display:flex;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+
+/* TITLE */
+#screen-title{min-height:100vh;justify-content:center;}
+.title-top-row{display:flex;align-items:flex-end;justify-content:center;margin-bottom:8px;}
+.high5-badge{display:inline-flex;align-items:center;background:linear-gradient(160deg,#2a1870,#1e1260);border:2px solid rgba(192,132,252,.5);border-radius:14px;padding:7px 20px 7px 24px;box-shadow:0 0 28px rgba(107,47,204,.55),inset 0 1px 0 rgba(255,255,255,.1);font-family:'Nunito',sans-serif;font-weight:900;font-size:clamp(1.6rem,5.5vw,3rem);}
+.h5-text{background:linear-gradient(160deg,#ffe566 0%,#ff9d3d 60%,#ff6eb4 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.h5-num{font-size:1.25em;background:linear-gradient(160deg,#ffe566,#ff9d3d);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 14px rgba(255,180,50,.8));}
+.cards-deco{position:relative;width:clamp(80px,16vw,110px);height:clamp(80px,16vw,110px);margin-left:-6px;margin-bottom:6px;flex-shrink:0;}
+.deco-card{position:absolute;width:clamp(42px,9vw,62px);height:clamp(54px,12vw,80px);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:clamp(.95rem,2.2vw,1.4rem);border:1.5px solid rgba(255,255,255,.22);box-shadow:0 4px 14px rgba(0,0,0,.5);}
+.deco-card-1{background:linear-gradient(145deg,#2a1a80,#1a0f60);bottom:12px;left:6px;transform:rotate(-12deg);animation:floatC1 3.5s ease-in-out infinite;}
+.deco-card-2{background:linear-gradient(145deg,#1a1870,#0e0d50);bottom:4px;right:2px;transform:rotate(6deg);animation:floatC2 3s ease-in-out infinite .4s;}
+@keyframes floatC1{0%,100%{transform:rotate(-12deg) translateY(0)}50%{transform:rotate(-10deg) translateY(-8px)}}
+@keyframes floatC2{0%,100%{transform:rotate(6deg) translateY(0)}50%{transform:rotate(8deg) translateY(-10px)}}
+.main-title-box{background:linear-gradient(180deg,rgba(26,12,90,.88) 0%,rgba(13,8,60,.92) 100%);border-radius:22px;border:2px solid rgba(192,132,252,.42);box-shadow:0 0 48px rgba(107,47,204,.5),inset 0 1px 0 rgba(255,255,255,.07);padding:14px 32px 18px;margin-top:2px;display:flex;flex-direction:column;align-items:center;gap:4px;}
+/* ── 떠다니는 수정구슬 ── */
+.float-orbs{position:fixed;inset:0;pointer-events:none;z-index:1;}
+.forb{position:absolute;font-size:1.8rem;animation:forbFloat linear infinite;opacity:0;filter:drop-shadow(0 0 10px rgba(155,89,245,.8));}
+.forb-1{left:6%;top:20%;font-size:2.2rem;animation-duration:7s;animation-delay:0s;}
+.forb-2{right:8%;top:15%;font-size:1.6rem;animation-duration:9s;animation-delay:1.5s;}
+.forb-3{left:12%;top:55%;font-size:1.4rem;animation-duration:6s;animation-delay:0.8s;}
+.forb-4{right:5%;top:60%;font-size:2rem;animation-duration:8s;animation-delay:2.5s;}
+.forb-5{left:4%;top:75%;font-size:1.3rem;animation-duration:7.5s;animation-delay:3s;}
+.forb-6{right:14%;top:40%;font-size:1.6rem;animation-duration:10s;animation-delay:1s;}
+@keyframes forbFloat{
+  0%{transform:translateY(0) scale(1);opacity:0;}
+  10%{opacity:.7;}
+  50%{transform:translateY(-30px) scale(1.08);}
+  90%{opacity:.5;}
+  100%{transform:translateY(-60px) scale(.9);opacity:0;}
+}
+.main-title-eyebrow{font-family:'Nunito','Noto Sans KR',sans-serif;font-weight:800;font-size:clamp(.72rem,1.8vw,.9rem);color:rgba(192,132,252,.8);letter-spacing:.5px;text-align:center;margin-bottom:2px;}
+.main-title-sub{font-family:'Nunito','Noto Sans KR',sans-serif;font-weight:700;font-size:clamp(.7rem,1.6vw,.85rem);color:rgba(255,255,255,.32);letter-spacing:.3px;margin-top:2px;}
+.main-title{font-family:'Nunito','Noto Sans KR',sans-serif;font-weight:900;font-size:clamp(2.2rem,7.5vw,4.8rem);line-height:1.12;letter-spacing:-1px;text-align:center;background:linear-gradient(90deg,#f5c842 0%,#ff9d3d 35%,#ff9d3d 65%,#ff6eb4 82%,#c084fc 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 18px rgba(255,158,61,.4));}
+.title-desc{color:rgba(255,255,255,.52);font-size:.9rem;text-align:center;margin-top:20px;line-height:2;}
+.title-desc span{color:var(--purple-l);}
+/* ── TAROT INTRO ── */
+.tarot-intro{display:flex;flex-direction:column;align-items:center;gap:20px;margin:8px 0 4px;}
+.three-cards-wrap{display:flex;align-items:flex-end;justify-content:center;gap:0;height:150px;position:relative;}
+.tc-card{width:80px;height:130px;border-radius:12px;position:relative;cursor:default;flex-shrink:0;}
+.tc-card-inner{width:100%;height:100%;border-radius:12px;background:linear-gradient(160deg,#1e0d6e,#3a18a8,#1a0a60);border:2px solid rgba(192,132,252,.55);box-shadow:0 8px 28px rgba(0,0,0,.6),inset 0 0 20px rgba(107,47,204,.2);display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+.tc-card-inner::before{content:'';position:absolute;inset:6px;border:1px solid rgba(192,132,252,.25);border-radius:8px;}
+.tc-card-inner::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(192,132,252,.8),transparent);border-radius:12px 12px 0 0;}
+.tc-card-back-pattern{position:absolute;inset:0;background-image:radial-gradient(rgba(192,132,252,.15) 1px,transparent 1px);background-size:10px 10px;border-radius:10px;}
+.tc-card-symbol{font-size:1.6rem;position:relative;z-index:1;opacity:.6;}
+.tc-card-question{font-family:'Nunito',sans-serif;font-weight:900;font-size:2.8rem;color:rgba(192,132,252,.7);position:relative;z-index:1;line-height:1;margin-top:2px;text-shadow:0 0 20px rgba(192,132,252,.5);}
+.tc-card-left{transform:rotate(-18deg) translateY(10px);animation:cardFloatL 4s ease-in-out infinite;transform-origin:bottom center;}
+.tc-card-center{transform:translateY(-10px) scale(1.08);animation:cardFloatC 3.5s ease-in-out .3s infinite;z-index:2;border-color:rgba(245,200,66,.7) !important;box-shadow:0 12px 36px rgba(0,0,0,.7),0 0 30px rgba(245,200,66,.25) !important;}
+.tc-card-right{transform:rotate(18deg) translateY(10px);animation:cardFloatR 4s ease-in-out .6s infinite;transform-origin:bottom center;}
+@keyframes cardFloatL{0%,100%{transform:rotate(-18deg) translateY(10px);}50%{transform:rotate(-15deg) translateY(4px);}}
+@keyframes cardFloatC{0%,100%{transform:translateY(-10px) scale(1.08);}50%{transform:translateY(-16px) scale(1.08);}}
+@keyframes cardFloatR{0%,100%{transform:rotate(18deg) translateY(10px);}50%{transform:rotate(15deg) translateY(4px);}}
+.tarot-intro-text{text-align:center;}
+.tarot-intro-label{font-family:'Nunito','Noto Sans KR',sans-serif;font-weight:900;font-size:clamp(1rem,3vw,1.3rem);background:linear-gradient(135deg,#f5c842,#ff9d3d,#ff6eb4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px;}
+.tarot-intro-sub{font-family:'Nunito','Noto Sans KR',sans-serif;font-weight:700;font-size:clamp(.76rem,2vw,.9rem);color:rgba(255,255,255,.4);}
+.start-btn{margin-top:36px;font-family:'Nunito',sans-serif;font-weight:900;font-size:clamp(1.05rem,2.8vw,1.4rem);letter-spacing:2px;color:#fff;padding:15px 72px;border:none;border-radius:50px;cursor:pointer;background:linear-gradient(135deg,#5c1fbb,#8a40f0);box-shadow:0 0 36px rgba(107,47,204,.75),0 6px 24px rgba(0,0,0,.45);transition:transform .15s,box-shadow .15s;position:relative;overflow:hidden;}
+.start-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.18) 0%,transparent 55%);border-radius:50px;}
+.start-btn:hover{transform:scale(1.07);box-shadow:0 0 56px rgba(155,89,245,.95);}
+.start-btn:active{transform:scale(.96);}
+
+/* PREVIEW */
+.prev-header{display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:14px;}
+.prev-lv{font-family:'Nunito',sans-serif;font-weight:800;font-size:1rem;letter-spacing:2px;color:var(--purple-l);background:rgba(107,47,204,.25);border:1px solid rgba(155,89,245,.4);padding:4px 20px;border-radius:30px;}
+.prev-msg{color:rgba(255,255,255,.65);font-size:.93rem;font-weight:700;}
+.cdown-wrap{display:flex;align-items:center;gap:14px;margin-bottom:12px;}
+.cdown-ring{width:52px;height:52px;position:relative;flex-shrink:0;}
+.cdown-ring svg{transform:rotate(-90deg);display:block;}
+.cdown-ring circle{fill:none;stroke-width:5;}
+.ring-bg{stroke:rgba(255,255,255,.1);}
+.ring-fg{stroke:var(--gold);stroke-linecap:round;}
+.cdown-num{position:absolute;top:0;left:0;width:52px;height:52px;display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;font-weight:900;font-size:1.3rem;color:var(--gold);filter:drop-shadow(0 0 8px var(--gold));}
+.cdown-label{color:rgba(255,255,255,.45);font-size:.82rem;}
+
+/* GAME */
+.game-hdr{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:1100px;margin-bottom:8px;gap:10px;flex-wrap:wrap;}
+.lv-pill{font-family:'Nunito',sans-serif;font-weight:800;font-size:1.05rem;letter-spacing:1.5px;color:var(--gold);background:rgba(107,47,204,.4);border:1.5px solid rgba(155,89,245,.5);padding:7px 22px;border-radius:30px;box-shadow:0 0 12px rgba(155,89,245,.3);}
+.score-pill{color:rgba(255,255,255,.6);font-size:1rem;font-weight:700;}
+.score-pill b{color:var(--gold);}
+.chances-box{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.3);border:1.5px solid rgba(255,100,100,.3);border-radius:24px;padding:7px 18px;}
+.chances-hearts{font-size:1.15rem;line-height:1;letter-spacing:2px;}
+.chances-label{color:rgba(255,255,255,.4);font-size:.8rem;font-weight:700;}
+.prog-wrap{width:100%;max-width:1100px;height:5px;background:rgba(255,255,255,.08);border-radius:10px;margin-bottom:10px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:10px;background:linear-gradient(90deg,var(--purple-l),var(--gold));transition:width .4s ease;box-shadow:0 0 8px rgba(155,89,245,.7);}
+
+/* fixed-height header zone so grid never shifts between preview↔play */
+.header-zone{
+  width:100%;max-width:1100px;
+  height:80px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+#preview-header,#play-header{width:100%;}
+
+/* GRID & CARDS */
+.grid{display:grid;gap:6px;width:100%;max-width:1100px;justify-items:center;}
+.grid.c4{grid-template-columns:repeat(4,1fr);}
+.grid.c7{grid-template-columns:repeat(7,1fr);}
+.grid.c8{grid-template-columns:repeat(8,1fr);}
+.grid.c10{grid-template-columns:repeat(10,1fr);}
+.grid.c12{grid-template-columns:repeat(12,1fr);}
+
+/* card — ratio 3/4, but clamp height so small grids don't balloon */
+.card-wrap{width:100%;aspect-ratio:3/4;max-height:160px;perspective:800px;cursor:pointer;position:relative;}
+.card-inner{width:100%;height:100%;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.4,0,.2,1);border-radius:10px;}
+.card-wrap.flipped .card-inner,.card-wrap.matched .card-inner{transform:rotateY(180deg);}
+.card-face{position:absolute;inset:0;border-radius:10px;backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:5px 4px;text-align:center;overflow:hidden;gap:2px;}
+.card-back{background:linear-gradient(145deg,#18126e,#2a1a90,#18126e);border:1.5px solid rgba(155,89,245,.45);box-shadow:0 4px 16px rgba(0,0,0,.45),inset 0 0 20px rgba(107,47,204,.15);}
+.card-back::before{content:'✦';font-size:clamp(1rem,2.2vw,1.7rem);color:rgba(155,89,245,.45);filter:drop-shadow(0 0 6px rgba(155,89,245,.6));}
+.card-back::after{content:'';position:absolute;inset:0;border-radius:11px;background-image:linear-gradient(45deg,rgba(155,89,245,.1) 1px,transparent 1px),linear-gradient(-45deg,rgba(155,89,245,.1) 1px,transparent 1px);background-size:14px 14px;}
+.card-front{transform:rotateY(180deg);border:1.5px solid rgba(255,255,255,.25);box-shadow:0 4px 16px rgba(0,0,0,.5);}
+.cf-comm{background:linear-gradient(150deg,#2d0f68,#5a24c4,#1e0852);border-color:rgba(192,132,252,.65)!important;}
+.cf-resp{background:linear-gradient(150deg,#083070,#1a52cc,#051a4a);border-color:rgba(80,160,255,.65)!important;}
+.cf-cheer{background:linear-gradient(150deg,#4a1e00,#b05000,#2a0e00);border-color:rgba(255,160,40,.65)!important;}
+.cf-grow{background:linear-gradient(150deg,#083018,#1a7038,#041808);border-color:rgba(60,200,90,.65)!important;}
+.cf-team{background:linear-gradient(150deg,#380a40,#882880,#200420);border-color:rgba(255,80,180,.65)!important;}
+.card-wrap.matched .card-front{border-color:var(--gold)!important;box-shadow:0 0 0 2px var(--gold),0 0 20px rgba(245,200,66,.5)!important;}
+/* card text */
+.card-emoji{font-size:clamp(2.2rem,5vw,3.2rem);line-height:1;margin-bottom:8px;filter:drop-shadow(0 0 10px rgba(255,255,255,.35));}
+.card-title{font-family:'Nunito','Noto Sans KR',sans-serif;font-weight:900;font-size:clamp(.85rem,1.8vw,1.15rem);color:#fff;line-height:1.3;text-align:center;text-shadow:0 0 12px rgba(255,255,255,.4);}
+.card-desc{display:none;}
+.card-title.flash{animation:titleFlash .55s ease forwards;}
+@keyframes titleFlash{
+  0%{transform:scale(1);color:#fff;}
+  35%{transform:scale(1.22);color:#ffe566;text-shadow:0 0 28px #ffe566,0 0 55px rgba(255,200,50,.7);}
+  65%{transform:scale(1.1);color:#ffd700;text-shadow:0 0 18px #ffd700;}
+  100%{transform:scale(1);color:#fff;text-shadow:0 0 12px rgba(255,255,255,.4);}
+}
+.wrong-shake{animation:shake .38s ease;}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+.card-wrap.matched::after{content:'✨';position:absolute;top:-5px;right:-2px;font-size:.9rem;animation:sparkle .7s ease forwards;pointer-events:none;}
+@keyframes sparkle{0%{opacity:1;transform:scale(0) rotate(0)}50%{opacity:1;transform:scale(1.4) rotate(180deg)}100%{opacity:0;transform:scale(.8) rotate(360deg) translateY(-14px)}}
+
+/* RESULT */
+.result-icon{font-size:3rem;margin-bottom:6px;}
+.result-title{font-family:'Nunito','Noto Sans KR',sans-serif;font-weight:900;font-size:clamp(1.8rem,6vw,3.2rem);background:linear-gradient(135deg,#f5c842,#ff9d3d,#ff6eb4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-align:center;margin-bottom:8px;}
+.result-sub{font-family:'Nunito','Noto Sans KR',sans-serif;color:rgba(255,255,255,.65);font-size:1rem;font-weight:700;text-align:center;margin-bottom:10px;line-height:1.75;}
+.result-sub b{color:var(--gold);}
+.result-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(107,47,204,.3);border:1.5px solid rgba(155,89,245,.4);border-radius:30px;padding:6px 22px;margin-bottom:26px;font-family:'Nunito',sans-serif;font-weight:800;color:var(--gold);font-size:.95rem;}
+.result-btns{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;}
+.btn{font-family:'Nunito','Noto Sans KR',sans-serif;font-weight:900;font-size:1rem;letter-spacing:1px;color:#fff;padding:12px 32px;border:none;border-radius:40px;cursor:pointer;transition:transform .15s,box-shadow .15s;}
+.btn-primary{background:linear-gradient(135deg,#5c1fbb,#8a40f0);box-shadow:0 0 24px rgba(107,47,204,.6),0 4px 16px rgba(0,0,0,.4);}
+.btn-primary:hover{transform:scale(1.06);box-shadow:0 0 40px rgba(155,89,245,.85);}
+.btn-ghost{background:rgba(107,47,204,.25);border:1.5px solid rgba(155,89,245,.45);}
+.btn-ghost:hover{background:rgba(107,47,204,.45);}
+
+/* GAME OVER */
+#screen-gameover{min-height:100vh;justify-content:center;}
+.gameover-icon{font-size:4rem;margin-bottom:12px;animation:floatIcon 2s ease-in-out infinite;}
+@keyframes floatIcon{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.gameover-title{font-family:'Nunito','Noto Sans KR',sans-serif;font-weight:900;font-size:clamp(2rem,6vw,3.5rem);background:linear-gradient(135deg,#ff6eb4,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-align:center;margin-bottom:10px;}
+.gameover-sub{color:rgba(255,255,255,.6);font-size:1rem;font-weight:700;text-align:center;margin-bottom:8px;line-height:1.75;}
+.gameover-sub b{color:var(--gold);}
+.gameover-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(192,57,43,.2);border:1.5px solid rgba(255,100,100,.3);border-radius:30px;padding:6px 22px;margin-bottom:28px;font-family:'Nunito',sans-serif;font-weight:800;color:#ff9999;font-size:.92rem;}
+.gameover-btns{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;}
+
+/* TAROT */
+#screen-tarot{min-height:100vh;justify-content:center;padding:32px 16px;}
+.tarot-eyebrow{font-family:'Nunito',sans-serif;font-weight:800;font-size:.88rem;letter-spacing:3px;color:var(--purple-l);text-transform:uppercase;margin-bottom:6px;text-align:center;}
+.tarot-sub-eyebrow{font-family:'Nunito','Noto Sans KR',sans-serif;font-weight:700;font-size:.82rem;color:rgba(255,255,255,.4);text-align:center;margin-bottom:10px;}
+.tarot-title{font-family:'Nunito','Noto Sans KR',sans-serif;font-weight:900;font-size:clamp(2rem,5.5vw,3.4rem);background:linear-gradient(135deg,#f5c842,#ff9d3d,#ff6eb4,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-align:center;line-height:1.2;margin-bottom:10px;}
+.tarot-total{margin-top:8px;color:rgba(255,255,255,.45);font-size:.88rem;font-weight:700;text-align:center;margin-bottom:22px;}
+.tarot-total b{color:var(--gold);}
+.crystal-ball{width:clamp(100px,20vw,140px);height:clamp(100px,20vw,140px);border-radius:50%;margin:0 auto 24px;background:radial-gradient(circle at 35% 35%,rgba(255,255,255,.25),rgba(155,89,245,.3) 40%,rgba(107,47,204,.6) 70%,#1a0860 100%);border:2px solid rgba(192,132,252,.5);box-shadow:0 0 40px rgba(155,89,245,.5),0 0 80px rgba(107,47,204,.3),inset 0 0 30px rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;font-size:clamp(2.5rem,6vw,4rem);animation:orbFloat 4s ease-in-out infinite;position:relative;overflow:hidden;}
+.crystal-ball::before{content:'';position:absolute;top:10%;left:20%;width:30%;height:20%;border-radius:50%;background:rgba(255,255,255,.2);filter:blur(4px);}
+@keyframes orbFloat{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-8px) scale(1.02)}}
+.tarot-cards-row{display:flex;gap:0;justify-content:center;flex-wrap:wrap;width:100%;max-width:100%;margin-bottom:20px;padding:0;box-sizing:border-box;}
+.tarot-card-single{max-width:100%;width:100%;box-sizing:border-box;padding:0 4px;}
+.tc-combo-emojis{display:none;}
+.tc-combo-x{display:none;}
+.tc-card-label{font-family:'Nunito','Noto Sans KR',sans-serif;font-weight:900;font-size:clamp(.88rem,3.5vw,1.2rem);color:var(--gold);text-align:center;margin-bottom:14px;letter-spacing:.3px;text-shadow:0 0 12px rgba(245,200,66,.4);white-space:nowrap;overflow:visible;}
+.tarot-card{background:linear-gradient(160deg,#1a1470,#22188a,#140e58);border:2px solid rgba(192,132,252,.4);border-radius:20px;padding:clamp(16px,3vw,26px) clamp(12px,3vw,22px);flex:1;min-width:min(190px,100%);max-width:300px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,.5);animation:cardReveal .7s ease both;position:relative;}
+.tarot-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,rgba(192,132,252,.7),transparent);}
+@keyframes cardReveal{from{opacity:0;transform:translateY(20px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+.tc-label{font-family:'Nunito',sans-serif;font-weight:800;font-size:.72rem;letter-spacing:2px;color:rgba(255,255,255,.4);text-transform:uppercase;margin-bottom:8px;}
+.tc-emoji{font-size:clamp(2rem,4.5vw,2.8rem);margin-bottom:8px;}
+.tc-name{display:none;}
+.tc-desc{font-family:'Nunito','Noto Sans KR',sans-serif;font-weight:700;font-size:clamp(.72rem,3.5vw,.88rem);color:rgba(255,255,255,.88);line-height:1.6;white-space:normal;word-break:keep-all;}
+.tarot-reading{background:linear-gradient(160deg,rgba(26,12,90,.7),rgba(13,8,60,.8));border:1.5px solid rgba(155,89,245,.35);border-radius:18px;padding:clamp(16px,2.5vw,24px);max-width:660px;width:100%;margin-bottom:22px;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,.4);animation:cardReveal .7s .4s ease both;}
+.tarot-reading-title{font-family:'Nunito','Noto Sans KR',sans-serif;font-weight:900;font-size:clamp(.95rem,2.2vw,1.25rem);color:var(--gold);margin-bottom:10px;}
+.tarot-reading-body{font-family:'Nunito','Noto Sans KR',sans-serif;font-weight:700;font-size:clamp(.82rem,1.6vw,.98rem);color:rgba(255,255,255,.82);line-height:1.85;}
+.tarot-reading-body b{color:var(--purple-gl);}
+
+/* FINALE CARDS */
+.ways-title{font-family:'Nunito','Noto Sans KR',sans-serif;font-weight:900;font-size:clamp(1.3rem,3.5vw,2rem);background:linear-gradient(135deg,#f5c842,#ff9d3d,#ff6eb4,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-align:center;margin-bottom:4px;}
+.ways-sub{color:rgba(255,255,255,.45);font-size:.85rem;font-weight:700;text-align:center;margin-bottom:20px;}
+.finale-cards{display:flex;gap:clamp(8px,1.8vw,16px);justify-content:center;align-items:flex-end;width:100%;max-width:900px;flex-wrap:nowrap;}
+.fc-wrap{flex:1;min-width:0;max-width:155px;perspective:800px;cursor:pointer;}
+.fc-wrap:nth-child(1){transform:rotate(-8deg) translateY(14px);}
+.fc-wrap:nth-child(2){transform:rotate(-4deg) translateY(5px);}
+.fc-wrap:nth-child(3){transform:rotate(0deg) translateY(0);}
+.fc-wrap:nth-child(4){transform:rotate(4deg) translateY(5px);}
+.fc-wrap:nth-child(5){transform:rotate(8deg) translateY(14px);}
+.fc-wrap.revealed:hover{filter:brightness(1.15);}
+.fc-wrap:nth-child(1).revealed:hover{transform:rotate(-8deg) translateY(2px);}
+.fc-wrap:nth-child(2).revealed:hover{transform:rotate(-4deg) translateY(-5px);}
+.fc-wrap:nth-child(3).revealed:hover{transform:rotate(0) translateY(-7px);}
+.fc-wrap:nth-child(4).revealed:hover{transform:rotate(4deg) translateY(-5px);}
+.fc-wrap:nth-child(5).revealed:hover{transform:rotate(8deg) translateY(2px);}
+.fc-inner{width:100%;aspect-ratio:2/3;transform-style:preserve-3d;border-radius:16px;transition:transform .75s cubic-bezier(.34,1.56,.64,1);}
+.fc-wrap.revealed .fc-inner{transform:rotateY(180deg);}
+.fc-face{position:absolute;inset:0;border-radius:16px;backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 8px;text-align:center;overflow:hidden;}
+.fc-back{background:linear-gradient(145deg,#18126e,#2a1a90,#18126e);border:2px solid rgba(155,89,245,.5);box-shadow:0 6px 24px rgba(0,0,0,.55);}
+.fc-back::before{content:'✦';font-size:1.8rem;color:rgba(155,89,245,.5);}
+.fc-back::after{content:'';position:absolute;inset:0;border-radius:15px;background-image:linear-gradient(45deg,rgba(155,89,245,.12) 1px,transparent 1px),linear-gradient(-45deg,rgba(155,89,245,.12) 1px,transparent 1px);background-size:16px 16px;}
+.fc-front{transform:rotateY(180deg);gap:6px;border:2px solid rgba(192,132,252,.6);box-shadow:0 6px 24px rgba(0,0,0,.6);}
+.fc-front::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,rgba(192,132,252,.7),transparent);border-radius:16px 16px 0 0;}
+.fc-front.cf-comm{background:linear-gradient(160deg,#2d0f68,#5a24c4,#1e0852);}
+.fc-front.cf-resp{background:linear-gradient(160deg,#083070,#1a52cc,#051a4a);}
+.fc-front.cf-cheer{background:linear-gradient(160deg,#4a1e00,#b05000,#2a0e00);}
+.fc-front.cf-grow{background:linear-gradient(160deg,#083018,#1a7038,#041808);}
+.fc-front.cf-team{background:linear-gradient(160deg,#380a40,#882880,#200420);}
+.fc-num{font-family:'Nunito',sans-serif;font-weight:900;font-size:.72rem;letter-spacing:1px;background:var(--gold);color:#1a0a00;padding:2px 10px;border-radius:20px;margin-bottom:2px;flex-shrink:0;}
+.fc-emoji{font-size:clamp(1.5rem,3.2vw,2.3rem);line-height:1;}
+.fc-title{font-family:'Nunito','Noto Sans KR',sans-serif;font-weight:900;font-size:clamp(.7rem,1.4vw,.95rem);color:var(--gold);line-height:1.3;}
+.fc-desc{font-size:clamp(.56rem,1.05vw,.72rem);color:rgba(255,255,255,.7);line-height:1.5;font-weight:700;}
+.finale-footer{margin-top:28px;font-family:'Nunito',sans-serif;font-weight:900;font-size:clamp(1.5rem,4vw,2.2rem);color:#fff;text-align:center;filter:drop-shadow(0 0 16px rgba(192,132,252,.5));opacity:0;transition:opacity .5s ease;}
+.finale-footer.show{opacity:1;animation:pulse 2.2s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+.replay-time-msg{font-family:'Nunito','Noto Sans KR',sans-serif;font-weight:900;font-size:clamp(1rem,2.5vw,1.4rem);background:linear-gradient(135deg,#f5c842,#ff9d3d);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px;filter:drop-shadow(0 0 10px rgba(245,200,66,.4));}
+.replay-cta{font-family:'Nunito','Noto Sans KR',sans-serif;font-weight:700;color:rgba(255,255,255,.65);font-size:clamp(.88rem,1.8vw,1.05rem);}
+
+/* OVERLAY */
+.lvl-overlay{position:fixed;inset:0;z-index:200;background:rgba(8,14,46,.96);display:none;flex-direction:column;align-items:center;justify-content:center;}
+.lvl-overlay.show{display:flex;animation:fadeIn .3s ease;}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.lvl-big{font-family:'Nunito',sans-serif;font-weight:900;font-size:clamp(2.4rem,8vw,4rem);background:linear-gradient(135deg,#f5c842,#ff9d3d,#ff6eb4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 28px rgba(245,200,66,.6));animation:zoomIn .4s ease;}
+@keyframes zoomIn{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
+.lvl-sub-txt{font-family:'Nunito','Noto Sans KR',sans-serif;font-weight:700;color:rgba(255,255,255,.5);margin-top:10px;font-size:.98rem;}
+.particles{position:fixed;inset:0;z-index:5;pointer-events:none;}
+.pt{position:absolute;border-radius:50%;animation:ptUp 1s ease-out forwards;}
+@keyframes ptUp{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--tx),var(--ty)) scale(0);opacity:0}}
+
+/* CARD DETAIL MODAL */
+.card-modal-overlay{position:fixed;inset:0;z-index:300;background:rgba(4,6,28,.85);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:20px;animation:fadeIn .25s ease;}
+.card-modal-overlay.show{display:flex;}
+.card-modal{
+  position:relative;max-width:420px;width:100%;
+  border-radius:24px;padding:36px 32px 28px;text-align:center;
+  border:2px solid rgba(192,132,252,.5);
+  box-shadow:0 0 60px rgba(107,47,204,.5),0 20px 60px rgba(0,0,0,.6);
+  animation:zoomIn .3s cubic-bezier(.34,1.56,.64,1);
+}
+.modal-close{position:absolute;top:14px;right:18px;font-size:1.4rem;color:rgba(255,255,255,.4);cursor:pointer;line-height:1;transition:color .15s;}
+.modal-close:hover{color:#fff;}
+.modal-emoji{font-size:3.5rem;margin-bottom:12px;filter:drop-shadow(0 0 16px rgba(192,132,252,.7));}
+.modal-title{font-family:'Nunito','Noto Sans KR',sans-serif;font-weight:900;font-size:1.5rem;color:var(--gold);margin-bottom:10px;text-shadow:0 0 12px rgba(245,200,66,.4);}
+.modal-desc{font-family:'Nunito','Noto Sans KR',sans-serif;font-weight:700;font-size:.95rem;color:rgba(255,255,255,.8);line-height:1.75;margin-bottom:20px;}
+.modal-section-label{font-family:'Nunito',sans-serif;font-weight:900;font-size:.85rem;letter-spacing:2px;color:rgba(255,255,255,.55);text-transform:uppercase;margin-bottom:10px;}
+.modal-type-name{font-family:'Nunito','Noto Sans KR',sans-serif;font-weight:900;font-size:1.15rem;background:linear-gradient(135deg,#f5c842,#ff9d3d);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px;text-align:center;}
+.modal-type-desc{font-family:'Nunito','Noto Sans KR',sans-serif;font-weight:700;font-size:.88rem;color:rgba(255,255,255,.75);line-height:1.75;margin-bottom:16px;text-align:center;}
+/* ── 이름 입력 모달 ── */
+.name-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:none;align-items:center;justify-content:center;backdrop-filter:blur(6px);}
+.name-modal-overlay.show{display:flex;}
+.name-modal-box{background:linear-gradient(160deg,#1a1470,#22188a);border:2px solid rgba(192,132,252,.5);border-radius:24px;padding:32px 28px;max-width:360px;width:90%;text-align:center;box-shadow:0 8px 48px rgba(0,0,0,.6);}
+.name-modal-emoji{font-size:3rem;margin-bottom:8px;}
+.name-modal-title{font-family:'Nunito','Noto Sans KR',sans-serif;font-weight:900;font-size:1.5rem;background:linear-gradient(135deg,#f5c842,#ff9d3d);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px;}
+.name-modal-time{font-family:'Nunito',sans-serif;font-weight:800;font-size:1rem;color:var(--gold);margin-bottom:12px;}
+.name-modal-desc{font-size:.85rem;color:rgba(255,255,255,.5);font-weight:700;margin-bottom:16px;}
+.name-modal-input{width:100%;background:rgba(255,255,255,.08);border:1.5px solid rgba(192,132,252,.4);border-radius:12px;padding:12px 16px;font-family:'Nunito','Noto Sans KR',sans-serif;font-size:1rem;font-weight:700;color:#fff;outline:none;text-align:center;margin-bottom:16px;}
+.name-modal-input:focus{border-color:var(--purple-l);box-shadow:0 0 0 3px rgba(155,89,245,.2);}
+.name-modal-input::placeholder{color:rgba(255,255,255,.3);}
+.name-modal-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.name-modal-status{margin-top:12px;font-size:.82rem;font-weight:700;min-height:20px;}
+.name-modal-status.ok{color:#4ade80;}
+.name-modal-status.err{color:#f87171;}
+.modal-reason{font-family:'Nunito','Noto Sans KR',sans-serif;font-weight:700;font-size:.85rem;color:rgba(255,255,255,.65);line-height:1.75;background:rgba(255,255,255,.05);border-radius:12px;padding:14px 16px;}
+</style>
+</head>
+<body>
+<div class="bg-base"></div><div class="bg-glow"></div><div class="stars-layer"></div>
+<svg style="position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.35;width:100%;height:100%" viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid slice">
+  <g stroke="#a855f7" stroke-width="1.3">
+    <line x1="50" y1="80" x2="190" y2="45"/><line x1="190" y1="45" x2="300" y2="130"/>
+    <line x1="870" y1="35" x2="1050" y2="105"/><line x1="1050" y1="105" x2="1155" y2="65"/>
+    <line x1="1090" y1="290" x2="1155" y2="395"/><line x1="1155" y1="395" x2="1115" y2="475"/>
+    <line x1="25" y1="370" x2="105" y2="310"/><line x1="105" y1="310" x2="65" y2="455"/>
+    <line x1="340" y1="615" x2="470" y2="655"/><line x1="470" y1="655" x2="600" y2="595"/>
+  </g>
+  <g fill="#c084fc">
+    <circle cx="50" cy="80" r="2.5"/><circle cx="190" cy="45" r="2"/><circle cx="300" cy="130" r="2.5"/>
+    <circle cx="870" cy="35" r="3"/><circle cx="1050" cy="105" r="2"/><circle cx="1155" cy="65" r="2.5"/>
+    <circle cx="1090" cy="290" r="2"/><circle cx="1155" cy="395" r="2.5"/><circle cx="1115" cy="475" r="2"/>
+    <circle cx="25" cy="370" r="2"/><circle cx="105" cy="310" r="3"/><circle cx="65" cy="455" r="2"/>
+    <circle cx="340" cy="615" r="2.5"/><circle cx="470" cy="655" r="2"/><circle cx="600" cy="595" r="2.5"/>
+  </g>
+  <g stroke="#e0aaff" stroke-width="1.8" opacity=".8">
+    <line x1="88" y1="35" x2="88" y2="52"/><line x1="80" y1="43" x2="97" y2="43"/>
+    <line x1="1130" y1="48" x2="1130" y2="65"/><line x1="1122" y1="57" x2="1139" y2="57"/>
+    <line x1="42" y1="520" x2="42" y2="537"/><line x1="34" y1="528" x2="51" y2="528"/>
+    <line x1="610" y1="30" x2="610" y2="47"/><line x1="602" y1="38" x2="619" y2="38"/>
+  </g>
+  <g fill="#fff" opacity=".6">
+    <circle cx="420" cy="90" r="1.2"/><circle cx="680" cy="55" r="1.5"/>
+    <circle cx="200" cy="300" r="1.2"/><circle cx="950" cy="250" r="1.5"/>
+    <circle cx="130" cy="580" r="1.2"/><circle cx="750" cy="520" r="1.2"/>
+  </g>
+</svg>
+<div class="particles" id="particles"></div>
+
+<!-- TITLE -->
+<div class="screen active" id="screen-title">
+
+  <!-- 떠다니는 수정구슬들 -->
+  <div class="float-orbs">
+    <div class="forb forb-1">🔮</div>
+    <div class="forb forb-2">🔮</div>
+    <div class="forb forb-3">✨</div>
+    <div class="forb forb-4">🔮</div>
+    <div class="forb forb-5">✨</div>
+    <div class="forb forb-6">🌙</div>
+  </div>
+
+  <!-- HIGH5 배지 + 카드 데코 + 타이틀 한 덩어리 -->
+  <div class="title-top-row">
+    <div class="high5-badge"><span class="h5-text">HIGH</span><span class="h5-num">5</span></div>
+    <div class="cards-deco">
+      <div class="deco-card deco-card-1">🌟</div>
+      <div class="deco-card deco-card-2">🌙</div>
+    </div>
+  </div>
+
+  <!-- 타이틀 박스: 서브카피 → 메인타이틀 → 서브카피2 한 흐름 -->
+  <div class="main-title-box">
+    <div class="main-title-eyebrow">🔮 당신에게 맞는 행운의 카드는 무엇일까요?</div>
+    <div class="main-title">카드 뒤집기 게임</div>
+
+  </div>
+
+  <div class="title-desc">
+    ✦ 같은 그림의 카드 두 장을 짝지어 맞추세요<br>
+    ✦ 총 <span>4단계</span> — 단계마다 카드 수가 늘어납니다<br>
+    ✦ 라운드마다 기회 <span>10번</span> — 매 라운드 시작 시 초기화됩니다 (마지막 라운드는 <span>12번</span>!)<br>
+    ✦ 게임이 끝나면 <span>행운의 카드</span> 한 장이 당신을 기다려요 🔮
+  </div>
+  <button class="start-btn" onclick="startGame()">GAME START</button>
+</div>
+
+<!-- GAME (preview + play use the same screen & grid) -->
+<div class="screen" id="screen-game">
+  <!-- 고정 높이 헤더존 — 미리보기/게임 교체 시 그리드 위치 불변 -->
+  <div class="header-zone">
+    <!-- 미리보기 헤더 -->
+    <div id="preview-header" style="display:none;width:100%;flex-direction:column;align-items:center;gap:6px;">
+      <div style="display:flex;align-items:center;gap:16px;justify-content:center;">
+        <div class="prev-lv" id="prev-lv-label">LEVEL 1</div>
+        <div class="prev-msg">📌 카드 위치를 기억하세요!</div>
+        <div class="cdown-wrap" style="margin-bottom:0">
+          <div class="cdown-ring">
+            <svg width="52" height="52" viewBox="0 0 52 52">
+              <circle class="ring-bg" cx="26" cy="26" r="22"/>
+              <circle class="ring-fg" id="ring-fg" cx="26" cy="26" r="22" stroke-dasharray="138.2" stroke-dashoffset="0"/>
+            </svg>
+            <div class="cdown-num" id="cdown-num">5</div>
+          </div>
+          <div class="cdown-label">초 후 뒤집힘</div>
+        </div>
+      </div>
+    </div>
+    <!-- 게임 플레이 헤더 -->
+    <div id="play-header" style="display:none;width:100%;flex-direction:column;align-items:center;">
+      <div class="game-hdr">
+        <div class="lv-pill" id="game-lv-pill">LEVEL 1</div>
+        <div class="chances-box">
+          <div class="chances-hearts" id="chances-hearts">❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️</div>
+          <div class="chances-label">기회</div>
+        </div>
+        <div class="score-pill">맞춘 쌍: <b id="match-count">0</b> / <b id="match-total">4</b></div>
+      </div>
+      <div class="prog-wrap"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+    </div>
+  </div>
+  <!-- 공유 그리드 — 미리보기/게임 모두 이 그리드 사용 -->
+  <div id="game-grid" class="grid"></div>
+</div>
+
+<!-- RESULT -->
+<div class="screen" id="screen-result">
+  <div class="result-icon" id="result-icon">🎉</div>
+  <div class="result-title" id="result-title">단계 완료!</div>
+  <div class="result-sub" id="result-sub"></div>
+  <div class="result-btns">
+    <button class="btn btn-primary" id="btn-next">다음 단계 →</button>
+    <button class="btn btn-ghost" onclick="restartAll()">처음부터</button>
+  </div>
+</div>
+
+<!-- GAME OVER -->
+<div class="screen" id="screen-gameover">
+  <div class="gameover-icon">💔</div>
+  <div class="gameover-title">기회를 모두 썼어요!</div>
+  <div class="gameover-sub" id="gameover-sub">아쉽지만 <b id="gameover-lv">LEVEL 1</b>에서 멈췄습니다</div>
+  <div class="gameover-btns">
+    <button class="btn btn-primary" id="gameover-retry-btn" onclick="retryLevel()">이 단계 다시 도전</button>
+    <button class="btn btn-ghost" onclick="restartAll()">처음부터 다시하기</button>
+  </div>
+</div>
+
+<!-- TAROT -->
+<div class="screen" id="screen-tarot">
+  <div class="tarot-eyebrow">🔮 행운의 카드</div>
+  <div class="tarot-sub-eyebrow" id="tarot-sub-eyebrow">카드가 당신의 이야기를 들려줍니다</div>
+  <div class="tarot-title" id="tarot-main-title">당신은...</div>
+  <div class="tarot-total">총 클리어 시간: <b id="tarot-total-time">00:00</b></div>
+  <div class="crystal-ball" id="crystal-ball">✨</div>
+  <div class="tarot-cards-row">
+    <div class="tarot-card tarot-card-single" style="animation-delay:.1s">
+      <div class="tc-card-label" id="tc-card-label">존중과 배려 카드가 말하는 당신</div>
+      <div class="tc-desc" id="tc-combo-desc"></div>
+    </div>
+  </div>
+  <!-- tarot-reading 제거 — 아래 숨겨진 요소로 JS 호환 유지 -->
+  <div style="display:none"><div id="tarot-reading-title"></div><div id="tarot-reading-body"></div></div>
+  <div class="ways-title">HIGH5의 5가지 약속</div>
+  <div class="ways-sub">✦ 카드를 클릭하면 당신에게 맞는 또 다른 이야기를 볼 수 있어요</div>
+  <div class="finale-cards" id="finale-cards"></div>
+  <div class="finale-footer" id="finale-footer">✋ HIGH FIVE! ✋</div>
+  <div class="replay-section" id="replay-section" style="opacity:0;transition:opacity .6s ease;margin-top:24px;text-align:center;">
+    <div class="replay-time-msg" id="replay-time-msg"></div>
+    <div class="replay-cta">기록 단축을 위해 다시 플레이 해볼까요? 🚀</div>
+    <button class="btn btn-primary" onclick="restartAll()" style="margin-top:16px;">다시 플레이</button>
+  </div>
+</div>
+
+<!-- 이름 입력 모달 -->
+<div class="name-modal-overlay" id="name-modal-overlay">
+  <div class="name-modal-box">
+    <div class="name-modal-emoji">🏆</div>
+    <div class="name-modal-title">게임 완료!</div>
+    <div class="name-modal-time" id="name-modal-time">총 클리어 시간: 00:00</div>
+    <div class="name-modal-desc">이름과 소속을 입력하면 기록이 저장돼요</div>
+    <input class="name-modal-input" id="name-modal-input" type="text" placeholder="이름" maxlength="10">
+    <input class="name-modal-input" id="dept-modal-input" type="text" placeholder="소속 (팀/부서)" maxlength="20" style="margin-top:-8px;">
+    <div class="name-modal-btns">
+      <button class="btn btn-primary" onclick="submitScore()">기록 제출 🚀</button>
+      <button class="btn btn-ghost" onclick="skipScore()">건너뛰기</button>
+    </div>
+    <div class="name-modal-status" id="name-modal-status"></div>
+  </div>
+</div>
+
+<!-- CARD DETAIL MODAL -->
+<div class="card-modal-overlay" id="card-modal-overlay" onclick="closeCardModal(event)">
+  <div class="card-modal" id="card-modal-box">
+    <span class="modal-close" onclick="closeCardModalDirect()">✕</span>
+    <div class="modal-emoji" id="modal-emoji">💬</div>
+    <div class="modal-title" id="modal-title">소통과 인정의 귀재</div>
+    <div class="modal-desc" id="modal-desc"></div>
+    <div class="modal-type-name" id="modal-type-name"></div>
+    <div class="modal-type-desc" id="modal-type-desc"></div>
+    <div class="modal-section-label">🃏 카드가 말하는 당신</div>
+    <div class="modal-reason" id="modal-reason"></div>
+  </div>
+</div>
+
+<!-- OVERLAY -->
+<div class="lvl-overlay" id="lvl-overlay">
+  <div class="lvl-big" id="lvl-big">LEVEL 2</div>
+  <div class="lvl-sub-txt" id="lvl-sub-txt"></div>
+</div>
+
+<script>
+window.onerror = function(msg, src, line, col, err) {
+  console.error('GLOBAL ERROR line:'+line+' col:'+col+' :: '+msg);
+  if(err && err.stack) console.error(err.stack);
+  return false;
+};
+
+const MAX_CHANCES=10;
+const CARDS=[
+  {id:'comm',emoji:'💬',colorCls:'cf-comm',title:'소통 & 인정',desc:'폭넓게 정보를 공유하고\n생각 차이를 인정합니다'},
+  {id:'resp',emoji:'🫱',colorCls:'cf-resp',title:'존중 & 배려',desc:'동등하게 존중하고\n서로의 상황을 배려합니다'},
+  {id:'cheer',emoji:'🎉',colorCls:'cf-cheer',title:'격려 & 칭찬',desc:'실패를 격려하며 작은\n성과와 노력도 칭찬합니다'},
+  {id:'grow',emoji:'🌱',colorCls:'cf-grow',title:'성장 & 육성',desc:'회사와 함께 구성원도\n성장합니다'},
+  {id:'team',emoji:'🚀',colorCls:'cf-team',title:'협업 & 시너지',desc:'함께 더 큰 성과를\n만듭니다'},
+];
+const LEVELS=[
+  {lv:1,pairs:4, cols:'c4', msg:'시작! 카드 8장'},
+  {lv:2,pairs:7, cols:'c7', msg:'카드 14장! 기억력을 발휘하세요 💪'},
+  {lv:3,pairs:10,cols:'c7', msg:'🔥 카드 20장! 집중하세요!'},
+  {lv:4,pairs:12,cols:'c8', msg:'💀 최종! 카드 24장! 전부 기억하세요!!!'},
+];
+
+// ── 핵심: gameId로 모든 비동기 콜백 무효화 ──
+let gameId=0; // launchLevel 호출마다 증가 → 구버전 setTimeout/rAF 무효화
+
+let currentLevel=0,currentDeck=[],flipped=[],totalMatched=0,lockBoard=false;
+let cdRafId=null,chancesLeft=MAX_CHANCES,retriesLeft=5;
+let levelStartTime=0,totalElapsedMs=0;
+const stats={firstClickTimes:[],wrongCounts:[],totalAttempts:[],firstMatchedCard:[],wrongCardFreq:{}};
+let levelWrong=0,levelAttempts=0,levelFirstMatchDone=false,levelFirstClickTime=null;
+let typeKey='fast_precise';
+const SHEETS_API='https://script.google.com/macros/s/AKfycbw9-ppNNCHUjd1pMFiipvbAyaLgryrOEalRx8_9ZC3RanP-KFxxfhs75_28Nur5znbsEA/exec';
+
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function buildPool(pairs){return Array.from({length:pairs},(_,i)=>({...CARDS[i%CARDS.length]}));}
+function msToStr(ms){const s=Math.floor(ms/1000),m=Math.floor(s/60),sc=s%60;return`${String(m).padStart(2,'0')}:${String(sc).padStart(2,'0')}`;}
+function getLevelMs(){return Date.now()-levelStartTime;}
+function renderHearts(){
+  const el=document.getElementById('chances-hearts');
+  if(el){const max=(currentLevel===LEVELS.length-1)?12:MAX_CHANCES;let h='';for(let i=0;i<max;i++)h+=i<chancesLeft?'❤️':'🖤';el.textContent=h;}
+}
+function showHeader(mode){
+  const ph=document.getElementById('preview-header');
+  const plh=document.getElementById('play-header');
+  if(ph)ph.style.display=mode==='preview'?'flex':'none';
+  if(plh)plh.style.display=mode==='play'?'flex':'none';
+}
+
+function startGame(){
+  currentLevel=0;totalElapsedMs=0;retriesLeft=5;
+  stats.firstClickTimes=[];stats.wrongCounts=[];stats.totalAttempts=[];
+  stats.firstMatchedCard=[];stats.wrongCardFreq={};
+  launchLevel();
+}
+function retryLevel(){retriesLeft--;launchLevel();}
+
+function launchLevel(){
+  gameId++; // 모든 구버전 비동기 콜백 무효화
+  const myId=gameId;
+
+  flipped=[];totalMatched=0;lockBoard=true;
+  chancesLeft = (currentLevel === LEVELS.length-1) ? 12 : MAX_CHANCES;
+  levelWrong=0;levelAttempts=0;levelFirstMatchDone=false;levelFirstClickTime=null;
+  if(cdRafId){cancelAnimationFrame(cdRafId);cdRafId=null;}
+
+  const lvl=LEVELS[currentLevel];
+  currentDeck=shuffle([...buildPool(lvl.pairs),...buildPool(lvl.pairs)].map((c,i)=>({...c,uid:i})));
+
+  showHeader('preview');
+  showScreen('screen-game');
+  document.getElementById('prev-lv-label').textContent=`LEVEL ${lvl.lv}`;
+  buildGrid(myId);
+  // 미리보기: 카드 앞면 보이기
+  document.querySelectorAll('#game-grid .card-wrap').forEach(w=>w.classList.add('flipped'));
+  startCountdown(myId,5);
+}
+
+function startCountdown(myId,sec){
+  const CIRC=138.2,totalMs=sec*1000;
+  const ringEl=document.getElementById('ring-fg'),numEl=document.getElementById('cdown-num');
+  if(!ringEl||!numEl)return;
+  ringEl.style.strokeDashoffset='0';numEl.textContent=String(sec);
+  const startTs=performance.now();let lastNum=sec;
+  function tick(now){
+    if(gameId!==myId)return; // 구버전 → 즉시 종료
+    const elapsed=now-startTs;
+    ringEl.style.strokeDashoffset=String(Math.min((elapsed/totalMs)*CIRC,CIRC));
+    const rem=Math.max(Math.ceil((totalMs-elapsed)/1000),0);
+    if(rem!==lastNum){numEl.textContent=String(rem);lastNum=rem;}
+    if(elapsed>=totalMs){
+      ringEl.style.strokeDashoffset=String(CIRC);numEl.textContent='0';
+      cdRafId=null;startPlay(myId);return;
+    }
+    cdRafId=requestAnimationFrame(tick);
+  }
+  cdRafId=requestAnimationFrame(tick);
+}
+
+function startPlay(myId){
+  if(gameId!==myId)return;
+  try{
+    const lvl=LEVELS[currentLevel];
+    showScreen('screen-game');
+    showHeader('play');
+    ['game-lv-pill','match-count','match-total','prog-fill','chances-hearts'].forEach(id=>{
+      const el=document.getElementById(id);
+      if(!el)console.error('NULL ELEMENT:',id);
+    });
+    const glp=document.getElementById('game-lv-pill');if(glp)glp.textContent=`LEVEL ${lvl.lv}`;
+    const mc=document.getElementById('match-count');if(mc)mc.textContent=0;
+    const mt=document.getElementById('match-total');if(mt)mt.textContent=lvl.pairs;
+    const pf=document.getElementById('prog-fill');if(pf)pf.style.width='0%';
+    renderHearts();
+    document.querySelectorAll('#game-grid .card-wrap').forEach(w=>w.classList.remove('flipped'));
+    lockBoard=false;
+    levelStartTime=Date.now();
+  }catch(e){console.error('startPlay ERROR:',e);}
+}
+
+function buildGrid(myId){
+  const c=document.getElementById('game-grid');c.innerHTML='';
+  const lvl=LEVELS[currentLevel];c.className=`grid ${lvl.cols}`;
+  currentDeck.forEach(card=>{
+    const w=document.createElement('div');
+    w.className='card-wrap';
+    w.innerHTML=`<div class="card-inner"><div class="card-face card-back"></div><div class="card-face card-front ${card.colorCls}"><div class="card-emoji">${card.emoji}</div><div class="card-title">${card.title}</div><div class="card-desc">${card.desc.replace(/\n/g,'<br>')}</div></div></div>`;
+    w.addEventListener('click',()=>{
+      if(gameId!==myId)return; // 구버전 카드 클릭 무시
+      onCardClick(w,card);
+    });
+    c.appendChild(w);
+  });
+}
+
+function onCardClick(wrap,card){
+  if(lockBoard||wrap.classList.contains('flipped')||wrap.classList.contains('matched'))return;
+  if(flipped.length>=2)return;
+  if(levelFirstClickTime===null)levelFirstClickTime=getLevelMs();
+  wrap.classList.add('flipped');flipped.push({wrap,card});
+  // 타이틀 flash 이펙트
+  const titleEl=wrap.querySelector('.card-title');
+  if(titleEl){titleEl.classList.remove('flash');void titleEl.offsetWidth;titleEl.classList.add('flash');}
+  if(flipped.length===2){levelAttempts++;checkMatch(gameId);}
+}
+
+function checkMatch(myId){
+  lockBoard=true;
+  const[a,b]=flipped;
+  if(a.card.id===b.card.id){
+    setTimeout(()=>{
+      if(gameId!==myId)return;
+      [a.wrap,b.wrap].forEach(w=>w.classList.add('matched'));
+      spawnBurst(a.wrap);totalMatched++;
+      if(!levelFirstMatchDone){stats.firstMatchedCard.push(a.card.id);levelFirstMatchDone=true;}
+      const lvl=LEVELS[currentLevel];
+      document.getElementById('match-count').textContent=totalMatched;
+      document.getElementById('prog-fill').style.width=(totalMatched/lvl.pairs*100)+'%';
+      flipped=[];lockBoard=false;
+      if(totalMatched===lvl.pairs)setTimeout(()=>{if(gameId===myId)showLevelResult();},600);
+    },350);
+  } else {
+    levelWrong++;chancesLeft--;
+    [a.card.id,b.card.id].forEach(id=>{stats.wrongCardFreq[id]=(stats.wrongCardFreq[id]||0)+1;});
+    setTimeout(()=>{
+      if(gameId!==myId)return;
+      [a.wrap,b.wrap].forEach(w=>{w.classList.add('wrong-shake');setTimeout(()=>w.classList.remove('wrong-shake','flipped'),430);});
+      renderHearts();flipped=[];
+      if(chancesLeft<=0){lockBoard=true;setTimeout(()=>{if(gameId===myId)showGameOver();},500);}
+      else lockBoard=false;
+    },700);
+  }
+}
+
+function showGameOver(){
+  const lvl=LEVELS[currentLevel];
+  document.getElementById('gameover-sub').innerHTML=`아쉽지만 <b>LEVEL ${lvl.lv}</b>에서 멈췄습니다`;
+  const retryBtn=document.getElementById('gameover-retry-btn');
+  retryBtn.style.display=retriesLeft>0?'inline-block':'none';
+  if(retriesLeft>0)retryBtn.textContent=`이 단계 다시 도전 (${retriesLeft}번 남음)`;
+  showScreen('screen-gameover');
+}
+
+function showLevelResult(){
+  const ms=getLevelMs();totalElapsedMs+=ms;
+  stats.firstClickTimes.push(levelFirstClickTime??9999999);
+  stats.wrongCounts.push(levelWrong);stats.totalAttempts.push(levelAttempts);
+  const isLast=currentLevel>=LEVELS.length-1;
+  document.getElementById('result-icon').textContent=isLast?'🏆':'🎉';
+  document.getElementById('result-title').textContent=isLast?'전체 완료!':'성공!';
+  const lvl=LEVELS[currentLevel];
+  document.getElementById('result-sub').innerHTML=isLast
+    ?`모든 <b>4단계</b>를 클리어했습니다! 수고했어요 👏`
+    :`<b>LEVEL ${lvl.lv}</b> 클리어! 👏<br>다음은 카드 <b>${LEVELS[currentLevel+1].pairs*2}장</b>에 도전합니다`;
+  const btn=document.getElementById('btn-next');
+  if(isLast){
+    btn.textContent='🔮 행운의 카드 뽑기';
+    btn.onclick=null;
+    btn.addEventListener('click', showTarot, {once:true});
+  } else {
+    btn.textContent='다음 단계 →';
+    btn.onclick=null;
+    btn.addEventListener('click', nextLevel, {once:true});
+  }
+  showScreen('screen-result');
+}
+
+function nextLevel(){
+  currentLevel++;retriesLeft=5;
+  const lvl=LEVELS[currentLevel];
+  document.getElementById('lvl-big').textContent=`LEVEL ${lvl.lv}`;
+  document.getElementById('lvl-sub-txt').textContent=lvl.msg;
+  const ov=document.getElementById('lvl-overlay');ov.classList.add('show');
+  setTimeout(()=>{ov.classList.remove('show');launchLevel();},1800);
+}
+
+function restartAll(){
+  if(cdRafId){cancelAnimationFrame(cdRafId);cdRafId=null;}
+  gameId++; // 모든 구버전 콜백 무효화
+  currentLevel=0;totalElapsedMs=0;retriesLeft=5;
+  showHeader('none');
+  const rs=document.getElementById('replay-section');if(rs)rs.style.opacity='0';
+  showScreen('screen-title');
+}
+
+const COMBO={
+  fast_precise:{
+    comm:{title:'소통과 인정의 귀재',desc:'직감적으로 상황을 읽고 핵심을 전달하는 사람. 빠르고 정확한 소통으로 팀의 물꼬를 틉니다.',reason:'첫 클릭이 매우 빠르고 실수율도 낮았어요. 직관적으로 판단하면서도 정보를 정확히 나누는 스타일이 소통과 인정의 귀재와 딱 맞습니다.'},
+    resp:{title:'존중과 배려의 천재',desc:'누군가 힘들기 전에 이미 알아채는 사람. 빠른 직관이 당신의 배려를 더욱 빛나게 합니다.',reason:'순발력이 뛰어나면서도 실수를 최소화했어요. 빠르게 읽고도 함부로 행동하지 않는 그 균형감이 존중과 배려의 천재 기질입니다.'},
+    cheer:{title:'격려와 칭찬의 수호자',desc:'팀원이 가장 필요한 순간에 격려와 칭찬을 아끼지 않습니다.',reason:'빠른 속도와 높은 정확도를 동시에 보여줬어요. 놓치는 것 없이 꼼꼼히 보는 눈이 작은 성과도 빛내주는 칭찬의 수호자로 이어집니다.'},
+    grow:{title:'성장과 육성의 지휘관',desc:'팀원을 옳은 방향으로 이끌어줍니다.',reason:'첫 판단이 거의 항상 정확했어요. 한 번에 올바른 방향을 짚는 그 안목이 팀을 이끄는 육성 지휘관의 자질과 닮아있습니다.'},
+    team:{title:'협업과 시너지의 연금술사',desc:'혼자라면 금이지만, 함께라면 다이아몬드. 빠른 판단으로 팀을 하나로 만드는 리더입니다.',reason:'빠르고 정확하게 게임을 주도했어요. 전체 흐름을 빠르게 읽고 팀을 하나로 묶는 리더십이 협업의 연금술사 기질입니다.'},
+  },
+  fast_wild:{
+    comm:{title:'소통과 인정의 개척자',desc:'먼저 말하고, 먼저 움직이는 사람. 다양한 생각을 끌어내며 대화의 새 길을 만듭니다.',reason:'빠르게 움직이며 실수도 주저하지 않았어요. 다양하게 시도하는 그 에너지가 새로운 소통의 물꼬를 여는 개척자 스타일입니다.'},
+    cheer:{title:'격려와 칭찬의 불꽃',desc:'실패해도 괜찮다고 먼저 외치는 사람. 당신이 있는 곳에서 팀은 언제나 다시 일어납니다.',reason:'실수를 두려워하지 않고 계속 도전했어요. 그 불굴의 태도가 팀원에게 용기를 주는 격려의 불꽃 스타일과 닮아있습니다.'},
+    grow:{title:'성장과 육성의 개척자',desc:'실수는 배움이고, 도전은 성장. 부딪히며 나아가는 당신의 방식이 팀 전체를 이끕니다.',reason:'빠른 속도로 많은 시도를 했어요. 실수에 굴하지 않고 계속 나아가는 그 자세가 성장의 가장 빠른 길임을 몸소 보여줬습니다.'},
+    team:{title:'협업과 시너지의 점화자',desc:'팀의 불꽃을 가장 먼저 당기는 사람. 함께할수록 폭발적으로 강해지는 협업의 촉매제입니다.',reason:'에너지를 아끼지 않고 열정적으로 플레이했어요. 팀 전체에 동력을 만들어내는 협업의 점화자 기질이 그대로 드러났습니다.'},
+  },
+  slow_precise:{
+    comm:{title:'소통과 인정의 설계자',desc:'천천히, 그러나 정확하게 마음을 여는 사람. 신뢰를 쌓아가며 소통의 구조를 만들어갑니다.',reason:'느리지만 실수가 거의 없었어요. 충분히 생각한 뒤 움직이는 신중한 스타일이 팀의 신뢰를 만드는 소통 설계자와 딱 맞습니다.'},
+    resp:{title:'존중과 배려의 설계자',desc:'한 마디, 한 행동에 깊은 배려가 담긴 사람. 신중함이 만들어내는 배려는 오래도록 기억됩니다.',reason:'느리지만 신중함이 돋보였어요. 서두르지 않고 상대를 살피는 플레이 방식이 존중과 배려를 몸소 실천하는 설계자 기질입니다.'},
+    cheer:{title:'격려와 칭찬의 촉진자',desc:'적재적소에 꼭 맞는 격려를 건네는 사람. 계산된 한마디가 누군가의 인생을 바꿉니다.',reason:'차분하면서도 정확하게 플레이했어요. 타이밍을 아는 그 눈이 가장 필요한 순간에 딱 맞는 격려를 만들어냅니다.'},
+    grow:{title:'성장과 육성의 인도자',desc:'체계적으로 가능성을 꽃피우는 사람. 팀원의 성장을 설계하는 조용한 전문가입니다.',reason:'신중하고 체계적으로 접근했어요. 성급하지 않고 과정을 중시하는 그 사고방식이 팀원의 성장을 이끄는 인도자의 자질입니다.'},
+    team:{title:'협업과 시너지의 연금술사',desc:'서로 다른 강점을 하나로 녹여내는 사람. 신중한 판단이 팀의 시너지를 완성합니다.',reason:'한 번도 헛된 클릭을 하지 않았어요. 꼼꼼한 판단력이 팀원 각자의 강점을 파악하고 하나로 엮어내는 연금술사 기질입니다.'},
+  },
+  slow_wild:{
+    comm:{title:'소통과 인정의 수호자',desc:'서두르지 않지만, 가장 깊이 연결되는 사람. 진짜 소통이 무엇인지 몸으로 보여줍니다.',reason:'느긋하게, 그리고 다양하게 시도했어요. 많은 경험으로 쌓인 넓은 시야가 다양한 생각을 인정하는 소통의 수호자로 이어집니다.'},
+    resp:{title:'존중과 배려의 수호자',desc:'상대의 속도에 맞춰 함께 걷는 사람. 그 넉넉함이 팀 안에서 가장 깊은 신뢰를 만듭니다.',reason:'여유롭고 느긋한 플레이 스타일이었어요. 서두르지 않고 상대의 속도에 맞추는 그 태도가 진정한 존중과 배려의 수호자임을 보여줍니다.'},
+    cheer:{title:'격려와 칭찬의 동반자',desc:'멈추지 않고 끝까지 함께 응원하는 사람. 꾸준한 격려가 팀의 가장 큰 힘이 됩니다.',reason:'여러 번 시도하면서도 포기하지 않았어요. 그 끈기와 꾸준함이 팀원 곁에서 오래도록 응원하는 격려의 동반자 스타일입니다.'},
+    grow:{title:'성장과 육성의 동반자',desc:'자신만의 속도로 끝까지 함께 나아가는 사람. 멈추지 않는 그 힘이 팀 전체를 이끕니다.',reason:'천천히, 그러나 다양하게 시도하며 끝까지 완주했어요. 포기하지 않는 그 꾸준함이 팀원과 함께 성장하는 동반자의 자질입니다.'},
+    team:{title:'협업과 시너지의 수호자',desc:'지치지 않고 팀의 균형을 지키는 사람. 느리지만 가장 오래 함께하는 협업의 중심입니다.',reason:'여유롭지만 끝까지 함께했어요. 흔들리지 않고 팀과 함께 완주하는 안정감이 협업의 중심을 지키는 수호자 기질입니다.'},
+  },
+};
+
+function showTarot(){
+  document.getElementById('tarot-total-time').textContent=msToStr(totalElapsedMs);
+  const validFCT=stats.firstClickTimes.filter(t=>t<99999);
+  const avgFCT=validFCT.length>0?validFCT.reduce((a,b)=>a+b,0)/validFCT.length:5000;
+  const totalPairs=LEVELS.slice(0,stats.wrongCounts.length).reduce((s,l)=>s+l.pairs,0)||1;
+  const msPerPair=totalElapsedMs/totalPairs;
+  const isFast=(avgFCT<2500)&&(msPerPair<7000);
+  const tw=stats.wrongCounts.reduce((a,b)=>a+b,0);
+  const ta=stats.totalAttempts.reduce((a,b)=>a+b,0);
+  const rawError=ta>0?tw/ta:0;
+  const avgLevel=stats.wrongCounts.length>0?(stats.wrongCounts.reduce((s,_,i)=>s+(i+1),0)/stats.wrongCounts.length):1;
+  const adjustedError=rawError*(1-(avgLevel-1)*0.06);
+  const isPrecise=adjustedError<0.40;
+  const TYPES={
+    fast_precise:{emoji:'⚡',name:'번개 직관형',desc:'첫 감각이 곧 정답! 빠르고 정확한 천재형이에요.',reading:'당신은 <b>직관과 정확함을 동시에</b> 가진 희귀한 유형입니다. 카드를 보는 순간 이미 위치가 뇌에 찍혀 있죠. 별이 속삭입니다 — <b>당신의 첫 번째 직감을 절대 의심하지 마세요.</b>'},
+    fast_wild:{emoji:'🎲',name:'폭풍 돌진형',desc:'일단 뒤집고 봐! 에너지 넘치는 도전가예요.',reading:'당신은 <b>두려움 없이 먼저 행동하는</b> 용감한 유형입니다. 실수도 즐기며 배우는 것이 당신의 방식이죠. 카드는 말합니다 — <b>그 도전 정신이 팀에 불꽃을 튕깁니다.</b>'},
+    slow_precise:{emoji:'🧠',name:'냉철 전략형',desc:'신중하게 관찰하고 정확하게 움직여요. 완벽주의자!',reading:'당신은 <b>모든 경우의 수를 계산하고 움직이는</b> 타입입니다. 충분히 확인한 후에야 행동해서 실수가 적죠. 별의 메시지 — <b>당신의 신중함이 팀의 닻이 되어줍니다.</b>'},
+    slow_wild:{emoji:'🌊',name:'파도타기형',desc:'느긋하지만 흔들리지 않아요. 나만의 리듬이 있는 타입.',reading:'당신은 <b>자신만의 페이스로 끝까지 완주하는</b> 유형입니다. 서두르지 않지만 절대 포기하지 않아요. 운명의 카드가 전합니다 — <b>그 흔들리지 않는 리듬이 팀의 중심이 됩니다.</b>'},
+  };
+  typeKey=isFast?(isPrecise?'fast_precise':'fast_wild'):(isPrecise?'slow_precise':'slow_wild'); // 전역 저장
+  const t=TYPES[typeKey];
+  let topId=null;
+  if(Object.keys(stats.wrongCardFreq).length>0){
+    let maxF=0;
+    [...CARDS].reverse().forEach(c=>{const f=stats.wrongCardFreq[c.id]||0;if(f>=maxF){maxF=f;topId=c.id;}});
+  }
+  if(!topId){
+    const freq={};stats.firstMatchedCard.forEach(id=>{freq[id]=(freq[id]||0)+1;});
+    let maxF2=0;
+    [...CARDS].reverse().forEach(c=>{if((freq[c.id]||0)>=maxF2){maxF2=freq[c.id]||0;topId=c.id;}});
+    if(!topId)topId=CARDS[Math.floor(Math.random()*CARDS.length)].id;
+  }
+  const topCard=CARDS.find(c=>c.id===topId);
+  const VM={
+    comm:{title:'소통 & 인정',desc:'폭넓게 정보를 공유하고 생각의 차이를 인정하는 것이 당신의 본능입니다.'},
+    resp:{title:'존중 & 배려',desc:'동등하게 존중하고 서로의 상황을 배려하는 마음이 당신 안에 있습니다.'},
+    cheer:{title:'격려 & 칭찬',desc:'실패를 격려하고 작은 성과와 노력도 칭찬하는 힘이 당신에게 있습니다.'},
+    grow:{title:'성장 & 육성',desc:'회사와 함께 구성원도 성장시키려는 마음이 당신을 움직이고 있습니다.'},
+    team:{title:'협업 & 시너지',desc:'함께할 때 더 큰 성과를 만드는 것을 당신은 본능적으로 알고 있습니다.'},
+  };
+  const v=VM[topId];
+  // 유형+가치 조합 — 하나의 타이틀 + 설명
+  // COMBO는 전역 변수로 선언됨
+  const combo=COMBO[typeKey]?.[topId];
+  const comboTitle=combo?.title||`${v.title}`;
+  const comboDesc=combo?.desc||`${t.name}의 에너지로 ${v.title}을 실천하는 사람이에요.`;
+  const comboReason=combo?.reason||`빠른 판단력과 ${v.title} 가치가 잘 어울리는 플레이 스타일이에요.`;
+  document.getElementById('tarot-main-title').textContent=comboTitle;
+  document.getElementById('crystal-ball').textContent=topCard.emoji;
+  // 카드 라벨: "존중과 배려 카드가 말하는 당신" 형식
+  document.getElementById('tc-card-label').textContent=`${topCard.title} 카드가 말하는 당신`;
+  document.getElementById('tc-combo-desc').textContent=comboDesc;
+  document.getElementById('tarot-reading-title').textContent=`🃏 카드가 말하는 당신`;
+  document.getElementById('tarot-reading-body').textContent=comboDesc;
+  buildFinaleCards();showScreen('screen-tarot');
+  // 기록 제출 모달 표시
+  showNameModal();
+  let cnt=0;CARDS.forEach((_,i)=>{setTimeout(()=>{revealFinaleCard(i);cnt++;if(cnt===CARDS.length){setTimeout(()=>{
+    document.getElementById('finale-footer').classList.add('show');
+    for(let k=0;k<5;k++)setTimeout(()=>spawnCelebration(),k*200);
+    setTimeout(()=>{
+      document.getElementById('replay-time-msg').textContent=`⏱ 총 클리어 시간 ${msToStr(totalElapsedMs)}`;
+      document.getElementById('replay-section').style.opacity='1';
+    },800);
+  },700);}},1800+i*550);});
+}
+
+function buildFinaleCards(){
+  const cont=document.getElementById('finale-cards');cont.innerHTML='';
+  document.getElementById('finale-footer').classList.remove('show');
+  CARDS.forEach((card,i)=>{
+    const w=document.createElement('div');w.className='fc-wrap';w.id=`fc-${i}`;
+    w.innerHTML=`<div class="fc-inner"><div class="fc-face fc-back"></div><div class="fc-face fc-front ${card.colorCls}"><div class="fc-num">0${i+1}</div><div class="fc-emoji">${card.emoji}</div><div class="fc-title">${card.title}</div><div class="fc-desc">${card.desc.replace(/\n/g,'<br>')}</div></div></div>`;
+    w.addEventListener('click',()=>onFinaleClick(i,w));cont.appendChild(w);
+  });
+}
+function revealFinaleCard(i){const w=document.getElementById(`fc-${i}`);if(w&&!w.classList.contains('revealed')){w.classList.add('revealed');setTimeout(()=>{const r=w.getBoundingClientRect();spawnPt(r.left+r.width/2,r.top+r.height/2,14);},380);}}
+function onFinaleClick(i,wrap){
+  if(!wrap.classList.contains('revealed')){revealFinaleCard(i);}
+  else{openCardModal(CARDS[i]);spawnPt(wrap.getBoundingClientRect().left+wrap.getBoundingClientRect().width/2,wrap.getBoundingClientRect().top+wrap.getBoundingClientRect().height/2,12);}
+}
+
+const CARD_DETAIL={
+  comm:{
+    fullDesc:'폭넓게 정보를 공유하고 서로의 생각 차이를 인정합니다.\n열린 소통은 팀의 신뢰를 쌓고, 다양한 시각이 더 나은 결과를 만들어냅니다.',
+    analysis:{
+      fast_precise:'첫 클릭이 빠르고 실수율이 낮았어요. 직관적으로 판단하면서도 정보를 정확히 나누는 스타일이 소통과 인정의 귀재와 딱 맞습니다.',
+      fast_wild:'빠르게 움직이며 다양하게 시도했어요. 먼저 말하고 먼저 움직이는 에너지가 소통의 새 길을 여는 개척자 스타일입니다.',
+      slow_precise:'느리지만 실수가 거의 없었어요. 충분히 생각한 뒤 말하는 신중한 스타일이 팀의 신뢰를 만드는 소통 설계자와 딱 맞습니다.',
+      slow_wild:'느긋하게 다양하게 시도했어요. 넓은 시야가 다양한 생각을 인정하는 소통의 수호자로 이어집니다.',
+    }
+  },
+  resp:{
+    fullDesc:'동등하게 존중하고 서로의 상황을 배려합니다.\n상대방의 입장에서 생각하는 자세가 팀의 온도를 따뜻하게 만들어요.',
+    analysis:{
+      fast_precise:'순발력이 뛰어나면서도 실수를 최소화했어요. 빠르게 읽고도 함부로 행동하지 않는 균형감이 존중과 배려의 천재 기질입니다.',
+      fast_wild:'에너지 넘치게 달리면서도 주변을 살폈어요. 빠르면서도 따뜻한 드문 조합이 존중과 배려의 불꽃 스타일입니다.',
+      slow_precise:'느리지만 신중함이 돋보였어요. 서두르지 않고 상대를 살피는 플레이가 존중과 배려를 몸소 실천하는 설계자 기질입니다.',
+      slow_wild:'여유롭고 느긋한 플레이였어요. 상대의 속도에 맞추는 그 태도가 진정한 존중과 배려의 수호자임을 보여줍니다.',
+    }
+  },
+  cheer:{
+    fullDesc:'실패를 격려하며 작은 성과와 노력도 칭찬합니다.\n한 마디의 격려가 누군가의 하루를 바꾸고, 팀 전체의 에너지를 높여요.',
+    analysis:{
+      fast_precise:'빠른 속도와 높은 정확도를 동시에 보여줬어요. 작은 성과도 놓치지 않는 눈이 격려와 칭찬의 수호자로 이어집니다.',
+      fast_wild:'실수를 두려워하지 않고 계속 도전했어요. 그 불굴의 태도가 팀에게 용기를 주는 격려의 불꽃 스타일입니다.',
+      slow_precise:'차분하면서도 정확하게 플레이했어요. 타이밍을 아는 눈이 적재적소의 격려를 만들어내는 촉진자 기질입니다.',
+      slow_wild:'여러 번 시도하면서도 포기하지 않았어요. 그 끈기가 팀원 곁에서 오래도록 응원하는 격려의 동반자 스타일입니다.',
+    }
+  },
+  grow:{
+    fullDesc:'회사와 함께 구성원도 성장합니다.\n개인의 성장이 팀의 성장으로, 팀의 성장이 회사의 성장으로 이어져요.',
+    analysis:{
+      fast_precise:'첫 판단이 거의 항상 정확했어요. 한 번에 올바른 방향을 짚는 안목이 팀을 이끄는 육성 지휘관의 자질입니다.',
+      fast_wild:'빠른 속도로 많은 시도를 했어요. 실수에 굴하지 않는 그 자세가 성장의 가장 빠른 길을 몸소 보여줍니다.',
+      slow_precise:'신중하고 체계적으로 접근했어요. 과정을 중시하는 사고방식이 팀원의 성장을 이끄는 인도자의 자질입니다.',
+      slow_wild:'천천히, 다양하게 시도하며 끝까지 완주했어요. 포기하지 않는 꾸준함이 함께 성장하는 동반자의 자질입니다.',
+    }
+  },
+  team:{
+    fullDesc:'함께 더 큰 성과를 만듭니다.\n1+1이 2가 아닌 10이 되는 것, 그것이 협업의 힘이에요.',
+    analysis:{
+      fast_precise:'빠르고 정확하게 게임을 주도했어요. 전체 흐름을 읽고 팀을 하나로 묶는 리더십이 협업의 연금술사 기질입니다.',
+      fast_wild:'에너지를 아끼지 않고 열정적으로 플레이했어요. 팀 전체에 동력을 만드는 협업의 점화자 기질이 드러났습니다.',
+      slow_precise:'한 번도 헛된 클릭을 하지 않았어요. 꼼꼼한 판단력이 팀원의 강점을 하나로 엮어내는 연금술사 기질입니다.',
+      slow_wild:'여유롭지만 끝까지 함께했어요. 흔들리지 않고 팀과 완주하는 안정감이 협업의 수호자 기질입니다.',
+    }
+  },
+};
+function openCardModal(card){
+  const detail=CARD_DETAIL[card.id];
+  const overlay=document.getElementById('card-modal-overlay');
+  const box=document.getElementById('card-modal-box');
+  const bgMap={comm:'linear-gradient(160deg,#1e0a4e,#2d1680)',resp:'linear-gradient(160deg,#051540,#0d2860)',cheer:'linear-gradient(160deg,#2a0e00,#5a2000)',grow:'linear-gradient(160deg,#041808,#0e3a14)',team:'linear-gradient(160deg,#180420,#3a0a50)'};
+  box.style.background=bgMap[card.id]||'linear-gradient(160deg,#1a1470,#22188a)';
+  // 현재 플레이어의 typeKey로 맞춤 유형명+설명+분석 표시
+  const curType=typeKey||'fast_precise';
+  const combo=COMBO[curType]?.[card.id];
+  const typeName=combo?.title||card.title;
+  const typeDesc=combo?.desc||detail.fullDesc;
+  const reasonText=detail.analysis?.[curType]||detail.analysis?.fast_precise||'';
+  document.getElementById('modal-emoji').textContent=card.emoji;
+  document.getElementById('modal-title').textContent=card.title;
+  document.getElementById('modal-desc').textContent='';
+  document.getElementById('modal-type-name').textContent=typeName;
+  document.getElementById('modal-type-desc').textContent=typeDesc;
+  document.getElementById('modal-reason').textContent=reasonText;
+  overlay.classList.add('show');
+}
+function closeCardModal(e){if(e.target===document.getElementById('card-modal-overlay'))closeCardModalDirect();}
+function closeCardModalDirect(){document.getElementById('card-modal-overlay').classList.remove('show');}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCardModalDirect();});
+
+function spawnBurst(el){const r=el.getBoundingClientRect();spawnPt(r.left+r.width/2,r.top+r.height/2,14);}
+function spawnPt(cx,cy,count){
+  const colors=['#f5c842','#ff9d3d','#ff6eb4','#c084fc','#60efff','#fff'];
+  const cont=document.getElementById('particles');
+  for(let i=0;i<count;i++){
+    const p=document.createElement('div');p.className='pt';
+    const a=(i/count)*360,d=40+Math.random()*60,sz=5+Math.random()*6;
+    p.style.cssText=`left:${cx}px;top:${cy}px;width:${sz}px;height:${sz}px;background:${colors[i%colors.length]};--tx:${(Math.cos(a*Math.PI/180)*d).toFixed(1)}px;--ty:${(Math.sin(a*Math.PI/180)*d).toFixed(1)}px;animation-delay:${(Math.random()*.06).toFixed(2)}s`;
+    cont.appendChild(p);setTimeout(()=>p.remove(),1100);
+  }
+}
+function spawnCelebration(){
+  const colors=['#f5c842','#ff9d3d','#ff6eb4','#c084fc','#60efff','#fff'];
+  const cont=document.getElementById('particles');
+  const cx=Math.random()*window.innerWidth,cy=Math.random()*window.innerHeight*.5+window.innerHeight*.2;
+  for(let i=0;i<22;i++){
+    const p=document.createElement('div');p.className='pt';
+    const a=(i/22)*360,d=90+Math.random()*130,sz=5+Math.random()*9;
+    p.style.cssText=`left:${cx}px;top:${cy}px;width:${sz}px;height:${sz}px;background:${colors[i%6]};--tx:${(Math.cos(a*Math.PI/180)*d).toFixed(1)}px;--ty:${(Math.sin(a*Math.PI/180)*d).toFixed(1)}px;animation-delay:${(Math.random()*.15).toFixed(2)}s`;
+    cont.appendChild(p);setTimeout(()=>p.remove(),1200);
+  }
+}
+function showNameModal(){
+  const overlay=document.getElementById('name-modal-overlay');
+  document.getElementById('name-modal-time').textContent=`총 클리어 시간: ${msToStr(totalElapsedMs)}`;
+  document.getElementById('name-modal-status').textContent='';
+  document.getElementById('name-modal-input').value='';
+  overlay.classList.add('show');
+  setTimeout(()=>document.getElementById('name-modal-input').focus(),300);
+}
+
+function hideNameModal(){
+  document.getElementById('name-modal-overlay').classList.remove('show');
+}
+
+function submitScore(){
+  const name=document.getElementById('name-modal-input').value.trim();
+  const dept=document.getElementById('dept-modal-input').value.trim();
+  const statusEl=document.getElementById('name-modal-status');
+  if(!name){statusEl.textContent='이름을 입력해주세요!';statusEl.className='name-modal-status err';return;}
+  if(!dept){statusEl.textContent='소속을 입력해주세요!';statusEl.className='name-modal-status err';return;}
+  // 즉시 화면 닫기 — 백그라운드에서 전송
+  hideNameModal();
+  // 백그라운드 전송 (no-cors라 응답 확인 불가, fire-and-forget)
+  fetch(SHEETS_API,{
+    method:'POST',
+    mode:'no-cors',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      name:name,
+      dept:dept,
+      time:msToStr(totalElapsedMs),
+      timeMs:totalElapsedMs,
+      date:new Date().toLocaleString('ko-KR')
+    })
+  }).catch(()=>{});
+}
+
+function skipScore(){
+  hideNameModal();
+}
+
+</script>
+</body>
+</html>
