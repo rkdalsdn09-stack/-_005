@@ -360,9 +360,7 @@ body{font-family:'Nunito','Noto Sans KR',sans-serif;background:var(--navy);displ
     ✦ 게임이 끝나면 <span>행운의 카드</span> 한 장이 당신을 기다려요 🔮
   </div>
   <button class="start-btn" onclick="startGame()">GAME START</button>
-  <div style="margin-top:14px;">
-    <button onclick="quickPreview()" style="background:none;border:1px solid rgba(155,89,245,.35);border-radius:20px;color:rgba(155,89,245,.6);font-size:.75rem;font-weight:700;cursor:pointer;padding:5px 16px;">🔮 결과 화면 미리보기</button>
-  </div>
+
 
 </div>
 
@@ -933,17 +931,6 @@ function testResult(valueId){
   stats.firstClickTimes = [1200, 1800, 2100, 1500];
   stats.wrongCounts = [2,3,2,1];
   stats.totalAttempts = [6,10,9,8];
-  showTarot();
-}
-
-function quickPreview(){
-  totalElapsedMs=78000;currentLevel=3;
-  typeKey='fast_precise';
-  stats.wrongCardFreq={comm:3,resp:1,cheer:2,grow:1,team:1};
-  stats.firstMatchedCard=['comm'];
-  stats.firstClickTimes=[1100,1600,2000,1400];
-  stats.wrongCounts=[2,3,2,1];
-  stats.totalAttempts=[6,10,9,8];
   showTarot();
 }
 
