@@ -184,6 +184,7 @@ body{font-family:'Nunito','Noto Sans KR',sans-serif;background:var(--navy);displ
 .tarot-card-single{width:100%;max-width:100%;box-sizing:border-box;}
 .tc-combo-emojis{display:none;}
 .tc-combo-x{display:none;}
+.tc-card-title{font-family:'Nunito','Noto Sans KR',sans-serif;font-weight:900;font-size:clamp(.88rem,2.5vw,1.05rem);color:var(--gold);text-align:center;margin-bottom:10px;text-shadow:0 0 10px rgba(245,200,66,.35);}
 .tc-card-label{font-family:'Nunito','Noto Sans KR',sans-serif;font-weight:900;font-size:clamp(.78rem,3vw,1.05rem);color:var(--gold);text-align:center;margin-bottom:12px;letter-spacing:.2px;text-shadow:0 0 12px rgba(245,200,66,.4);white-space:nowrap;overflow:visible;}
 .tarot-card{background:linear-gradient(160deg,#1a1470,#22188a,#140e58);border:2px solid rgba(192,132,252,.4);border-radius:16px;padding:clamp(14px,2.5vw,22px) clamp(8px,2vw,14px);flex:1;min-width:min(190px,100%);max-width:300px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,.5);animation:cardReveal .7s ease both;position:relative;}
 .tarot-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,rgba(192,132,252,.7),transparent);}
@@ -208,6 +209,14 @@ body{font-family:'Nunito','Noto Sans KR',sans-serif;background:var(--navy);displ
 .fc-wrap:nth-child(4){transform:rotate(4deg) translateY(5px);}
 .fc-wrap:nth-child(5){transform:rotate(8deg) translateY(14px);}
 .fc-wrap.revealed:hover{filter:brightness(1.15);}
+.fc-wrap.my-card{z-index:5;}
+.fc-wrap.my-card .fc-inner{animation:myCardGlow 1.8s ease-in-out infinite;}
+@keyframes myCardGlow{
+  0%,100%{box-shadow:0 0 10px 2px rgba(245,200,66,.4),0 0 24px 4px rgba(192,132,252,.3);}
+  50%{box-shadow:0 0 22px 6px rgba(245,200,66,.85),0 0 44px 10px rgba(192,132,252,.6);}
+}
+.fc-wrap.my-card .fc-back{border:2px solid rgba(245,200,66,.6);}
+.my-card-badge{position:absolute;bottom:-22px;left:50%;transform:translateX(-50%);font-family:'Nunito','Noto Sans KR',sans-serif;font-weight:900;font-size:.65rem;color:var(--gold);white-space:nowrap;letter-spacing:.5px;text-shadow:0 0 8px rgba(245,200,66,.8);}
 .fc-wrap:nth-child(1).revealed:hover{transform:rotate(-8deg) translateY(2px);}
 .fc-wrap:nth-child(2).revealed:hover{transform:rotate(-4deg) translateY(-5px);}
 .fc-wrap:nth-child(3).revealed:hover{transform:rotate(0) translateY(-7px);}
@@ -351,6 +360,9 @@ body{font-family:'Nunito','Noto Sans KR',sans-serif;background:var(--navy);displ
     ✦ 게임이 끝나면 <span>행운의 카드</span> 한 장이 당신을 기다려요 🔮
   </div>
   <button class="start-btn" onclick="startGame()">GAME START</button>
+  <div style="margin-top:14px;">
+    <button onclick="quickPreview()" style="background:none;border:1px solid rgba(155,89,245,.35);border-radius:20px;color:rgba(155,89,245,.6);font-size:.75rem;font-weight:700;cursor:pointer;padding:5px 16px;">🔮 결과 화면 미리보기</button>
+  </div>
 
 </div>
 
@@ -423,7 +435,7 @@ body{font-family:'Nunito','Noto Sans KR',sans-serif;background:var(--navy);displ
   <div class="crystal-ball" id="crystal-ball">✨</div>
   <div class="tarot-cards-row">
     <div class="tarot-card tarot-card-single" style="animation-delay:.1s">
-      <div class="tc-card-label" id="tc-card-label">존중과 배려 카드가 말하는 당신</div>
+      <div class="tc-card-title" id="tc-card-title"></div>
       <div class="tc-desc" id="tc-combo-desc"></div>
     </div>
   </div>
@@ -467,8 +479,7 @@ body{font-family:'Nunito','Noto Sans KR',sans-serif;background:var(--navy);displ
     <div class="modal-desc" id="modal-desc"></div>
     <div class="modal-type-name" id="modal-type-name"></div>
     <div class="modal-type-desc" id="modal-type-desc"></div>
-    <div class="modal-section-label">🃏 카드가 말하는 당신</div>
-    <div class="modal-reason" id="modal-reason"></div>
+
   </div>
 </div>
 
@@ -509,6 +520,7 @@ let levelStartTime=0,totalElapsedMs=0;
 const stats={firstClickTimes:[],wrongCounts:[],totalAttempts:[],firstMatchedCard:[],wrongCardFreq:{}};
 let levelWrong=0,levelAttempts=0,levelFirstMatchDone=false,levelFirstClickTime=null;
 let typeKey='fast_precise';
+let topId=null;
 const SHEETS_API='https://script.google.com/macros/s/AKfycbw9-ppNNCHUjd1pMFiipvbAyaLgryrOEalRx8_9ZC3RanP-KFxxfhs75_28Nur5znbsEA/exec';
 
 function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
@@ -754,7 +766,7 @@ function showTarot(){
   };
   typeKey=isFast?(isPrecise?'fast_precise':'fast_wild'):(isPrecise?'slow_precise':'slow_wild'); // 전역 저장
   const t=TYPES[typeKey];
-  let topId=null;
+  topId=null;
   if(Object.keys(stats.wrongCardFreq).length>0){
     let maxF=0;
     [...CARDS].reverse().forEach(c=>{const f=stats.wrongCardFreq[c.id]||0;if(f>=maxF){maxF=f;topId=c.id;}});
@@ -782,8 +794,7 @@ function showTarot(){
   const comboReason=combo?.reason||`빠른 판단력과 ${v.title} 가치가 잘 어울리는 플레이 스타일이에요.`;
   document.getElementById('tarot-main-title').textContent=comboTitle;
   document.getElementById('crystal-ball').textContent=topCard.emoji;
-  // 카드 라벨: "존중과 배려 카드가 말하는 당신" 형식
-  document.getElementById('tc-card-label').textContent=`${topCard.title} 카드가 말하는 당신`;
+  document.getElementById('tc-card-title').textContent=`${topCard.title} 카드가 말하는 당신`;
   document.getElementById('tc-combo-desc').textContent=comboDesc;
   document.getElementById('tarot-reading-title').textContent=`🃏 카드가 말하는 당신`;
   document.getElementById('tarot-reading-body').textContent=comboDesc;
@@ -804,8 +815,12 @@ function buildFinaleCards(){
   const cont=document.getElementById('finale-cards');cont.innerHTML='';
   document.getElementById('finale-footer').classList.remove('show');
   CARDS.forEach((card,i)=>{
-    const w=document.createElement('div');w.className='fc-wrap';w.id=`fc-${i}`;
+    const isMyCard=(card.id===topId);
+    const w=document.createElement('div');
+    w.className='fc-wrap'+(isMyCard?' my-card':'');
+    w.id=`fc-${i}`;
     w.innerHTML=`<div class="fc-inner"><div class="fc-face fc-back"></div><div class="fc-face fc-front ${card.colorCls}"><div class="fc-num">0${i+1}</div><div class="fc-emoji">${card.emoji}</div><div class="fc-title">${card.title}</div><div class="fc-desc">${card.desc.replace(/\n/g,'<br>')}</div></div></div>`;
+    if(isMyCard){const badge=document.createElement('div');badge.className='my-card-badge';badge.textContent='✦ 나의 카드';w.appendChild(badge);}
     w.addEventListener('click',()=>onFinaleClick(i,w));cont.appendChild(w);
   });
 }
@@ -879,7 +894,6 @@ function openCardModal(card){
   document.getElementById('modal-type-name').textContent=typeName;
   document.getElementById('modal-type-desc').textContent=typeDesc;
   // 카드가 말하는 당신 = 상단 내용과 동일하게
-  document.getElementById('modal-reason').textContent=typeDesc;
   overlay.classList.add('show');
 }
 function closeCardModal(e){if(e.target===document.getElementById('card-modal-overlay'))closeCardModalDirect();}
@@ -919,6 +933,17 @@ function testResult(valueId){
   stats.firstClickTimes = [1200, 1800, 2100, 1500];
   stats.wrongCounts = [2,3,2,1];
   stats.totalAttempts = [6,10,9,8];
+  showTarot();
+}
+
+function quickPreview(){
+  totalElapsedMs=78000;currentLevel=3;
+  typeKey='fast_precise';
+  stats.wrongCardFreq={comm:3,resp:1,cheer:2,grow:1,team:1};
+  stats.firstMatchedCard=['comm'];
+  stats.firstClickTimes=[1100,1600,2000,1400];
+  stats.wrongCounts=[2,3,2,1];
+  stats.totalAttempts=[6,10,9,8];
   showTarot();
 }
 
